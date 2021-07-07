@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define SCREEN_WIDTH 40
+#define SCREEN_WIDTH 30
 #define SCREEN_HEIGHT 24
 
 #define FPS 10
@@ -18,8 +18,11 @@ int ballY;
 int ballVeroX = 1;
 int ballVeroY = 1;
 
-int paddleX = (SCREEN_WIDTH - PADDLE_WIDTH) / 2;
-int paddleY = SCREEN_HEIGHT - 3;
+int paddleX;
+int paddleY;
+
+// ゲームフィールドの座標を定義
+int field[SCREEN_HEIGHT][SCREEN_WIDTH];
 
 void drawScreen() {
 	system("cls");
@@ -41,6 +44,9 @@ void drawScreen() {
 			else if (h == paddleY && w >= paddleX && w < (paddleX + PADDLE_WIDTH)) {
 				fprintf_s(stdout, "◆");
 			}
+			else if (w != 0 && w != SCREEN_WIDTH - 1 && h != 0 && field[h][w]) {
+				fprintf_s(stdout, "★");
+			}
 			else {
 				fprintf_s(stdout, "　");
 			}
@@ -60,7 +66,27 @@ void drawScreen() {
 	}
 }
 
+void resetGame(){
+
+	ballY = SCREEN_HEIGHT / 4;
+
+	ballVeroY = 1;
+
+	paddleX = (SCREEN_WIDTH - PADDLE_WIDTH) / 2;
+	paddleY = SCREEN_HEIGHT - 3;
+
+	for (int i = 0; i < SCREEN_HEIGHT / 4; i++) {
+		for (int j = 0; j < SCREEN_WIDTH; j++) {
+			field[i][j] = 1;
+		}
+	}
+
+	drawScreen();
+}
 int main() {
+
+	resetGame();
+
 	// 前回の描画時間
 	clock_t lastDrawTime = clock();
 	
@@ -99,9 +125,25 @@ int main() {
 				ballVeroY = -1;
 			}
 
+			for (int x = ballX - 1; x <= ballX + 1; x++) {
+				int y = ballY - 1;
+
+				if (x < 1 || x >= SCREEN_WIDTH - 1 || y < 0) {
+					continue;
+				}
+				if (field[y][x]) {
+					field[y][x] = 0;
+					ballVeroY = 1;
+				}
+			}
+
 			drawScreen();
 
 			lastDrawTime = currentTime;
+
+			if (ballY >= SCREEN_HEIGHT - 1) {
+				resetGame();
+			}
 		}
 		
 		if (_kbhit()) {
