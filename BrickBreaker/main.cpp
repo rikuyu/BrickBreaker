@@ -83,6 +83,21 @@ int main() {
 			if (ballY >= SCREEN_HEIGHT - 1) {
 				ballVeroY = -1;
 			}
+			// パドルとボールの衝突判定
+			if (ballY == paddleY - 1 
+				&& ballX >= paddleX - 1 
+				&& ballX < paddleX + PADDLE_WIDTH	+ 1) {
+				
+				// パドルの右半部に衝突
+				if (ballX < paddleX + PADDLE_WIDTH / 2) {
+					ballVeroX = -1;
+				}
+				else{
+					ballVeroX = 1;
+				}
+
+				ballVeroY = -1;
+			}
 
 			drawScreen();
 
