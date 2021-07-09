@@ -10,9 +10,16 @@
 
 #define PADDLE_VEROCITY 2
 
+#define BUFFSIZE 1024
+
+struct Ball {
+	int veroX;
+	int veroY;
+};
+
 void drawScreen();
 void resetGame();
 void movePaddle();
 void controlGame();
-void judgeBallColliWall();
-void judgeBallColliPaddle();
+void getCurrentDirectory(char* currentDir);
+bool readSettingFile(Ball ball);

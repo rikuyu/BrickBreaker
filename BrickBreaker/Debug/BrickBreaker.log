@@ -1,2 +1,3 @@
 ﻿  GameAlgorithm.cpp
+C:\Users\rikuy\source\repos\BrickBreaker\BrickBreaker\GameAlgorithm.cpp(37,25): warning C4566: ユニバーサル文字名 '\u00A5' によって表示されている文字は、現在のコード ページ (932) で表示できません
   BrickBreaker.vcxproj -> C:\Users\rikuy\source\repos\BrickBreaker\Debug\BrickBreaker.exe

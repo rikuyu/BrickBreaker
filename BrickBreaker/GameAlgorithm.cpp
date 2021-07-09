@@ -1,101 +1,142 @@
-#include <conio.h>
+ï»¿#include <conio.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <Windows.h>
 #include <time.h>
 #include "GameAlgorithm.h"
 
 int ballX;
 int ballY;
-int ballVeroX = 1;
-int ballVeroY = 1;
+int ballVeroX;
+int ballVeroY;
 
 int paddleX;
 int paddleY;
 
-// c‚èƒuƒƒbƒN”ƒJƒEƒ“ƒg
-int rBlock = SCREEN_HEIGHT * SCREEN_WIDTH;
-
 bool isGameOver = false;
 
-// ƒQ[ƒ€ƒtƒB[ƒ‹ƒh‚ÌÀ•W‚ğ’è‹`
+// ã‚²ãƒ¼ãƒ ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã®åº§æ¨™ã‚’å®šç¾©
 int field[SCREEN_HEIGHT][SCREEN_WIDTH];
+
+void getCurrentDirectory(char* currentDir) {
+	GetCurrentDirectory(BUFFSIZE, currentDir);
+}
+
+bool readSettingFile(Ball ball) {
+	char currentDirectory[BUFFSIZE];
+	getCurrentDirectory(currentDirectory);
+	char section[BUFFSIZE];
+	sprintf_s(section, "Ball");
+	char keyX[BUFFSIZE];
+	sprintf_s(keyX, "verocityX");
+	char keyY[BUFFSIZE];
+	sprintf_s(keyY, "verocityX");
+
+	char settingFile[BUFFSIZE];
+
+	sprintf_s(settingFile, "%sÂ¥Â¥setting.ini", currentDirectory);
+
+	int veroX = GetPrivateProfileInt(section, keyX, -1, settingFile);
+	int veroY = GetPrivateProfileInt(section, keyY, -1, settingFile);
+
+	if (veroX == -1 || veroY == -1) {
+		return false;
+	}
+	else {
+		ball.veroX = veroX;
+		ball.veroY = veroY;
+	}
+
+	return true;
+}
+
+void initBall() {
+	Ball ball;
+	ball.veroX = 1;
+	ball.veroY = 1;
+
+	if (readSettingFile(ball)) {
+		ballVeroX = ball.veroX;
+		ballVeroY = ball.veroY;
+	}
+}
 
 void drawScreen() {
 	system("cls");
 
 	if (!isGameOver) {
-		// ƒ^ƒCƒgƒ‹‚Ì•\¦
+		// ã‚¿ã‚¤ãƒˆãƒ«ã®è¡¨ç¤º
 		for (int w = 0; w < SCREEN_WIDTH + 2; w++) {
 			if (w == SCREEN_WIDTH / 6) {
-				fprintf_s(stdout, "ƒuƒƒbƒN•ö‚µ ¶ˆÚ“®FzƒL[ ‰EˆÚ“®F cƒL[");
+				fprintf_s(stdout, "ãƒ–ãƒ­ãƒƒã‚¯å´©ã— å·¦ç§»å‹•ï¼šzã‚­ãƒ¼ å³ç§»å‹•ï¼š cã‚­ãƒ¼");
 			}
 			else if (w == SCREEN_WIDTH + 1) {
-				fprintf_s(stdout, "@\n");
+				fprintf_s(stdout, "ã€€\n");
 			}
 			else {
-				fprintf_s(stdout, "@");
+				fprintf_s(stdout, "ã€€");
 			}
 		}
 	}
 	else {
-		// Gameover‚Ì•¶š‚ğ•\¦
+		// Gameoverã®æ–‡å­—ã‚’è¡¨ç¤º
 		for (int w = 0; w < SCREEN_WIDTH + 2; w++) {
 			if (w == SCREEN_WIDTH / 2 - 2) {
 				fprintf_s(stdout, "\x1b[31mGAME OVER\033[m");
 			}
 			else if (w == SCREEN_WIDTH + 1) {
-				fprintf_s(stdout, "@\n");
+				fprintf_s(stdout, "ã€€\n");
 			}
 			else {
-				fprintf_s(stdout, "@");
+				fprintf_s(stdout, "ã€€");
 			}
 		}
 	}
 	
-	// ã‚Ì•Ç‚Ì•`‰æ
+	// ä¸Šã®å£ã®æç”»
 	for (int w = 0; w < SCREEN_WIDTH + 2; w++) {
 		if (w != SCREEN_WIDTH + 1) {
-			fprintf_s(stdout, "¡");
+			fprintf_s(stdout, "â– ");
 		}
 		else {
-			fprintf_s(stdout, "¡\n");
+			fprintf_s(stdout, "â– \n");
 		}
 	}
 
-	// ¶‰E‚Ì•ÇAƒ{[ƒ‹Aƒpƒhƒ‹‚Ì•`‰æ
+	// å·¦å³ã®å£ã€ãƒœãƒ¼ãƒ«ã€ãƒ‘ãƒ‰ãƒ«ã®æç”»
 	for (int h = 0; h < SCREEN_HEIGHT; h++) {
-		fprintf_s(stdout, "¡");
+		fprintf_s(stdout, "â– ");
 		for (int w = 0; w < SCREEN_WIDTH; w++) {
 			if (!isGameOver) {
 				if (w == ballX && h == ballY) {
-					fprintf_s(stdout, "\x1b[36mœ\033[m");
+					fprintf_s(stdout, "\x1b[36mâ—\033[m");
 				}
 				else if (h == paddleY && w >= paddleX && w < (paddleX + PADDLE_WIDTH)) {
-					fprintf_s(stdout, "Ÿ");
+					fprintf_s(stdout, "â—†");
 				}
 				else if (w != 0 && w != SCREEN_WIDTH - 1 && h != 0 && field[h][w] == 1) {
-					fprintf_s(stdout, "\x1b[33mš\033[m");
+					fprintf_s(stdout, "\x1b[33mâ˜…\033[m");
 				}
 				else {
-					fprintf_s(stdout, "@");
+					fprintf_s(stdout, "ã€€");
 				}
 			}
 			else {
-				fprintf_s(stdout, "@");
+				fprintf_s(stdout, "ã€€");
 			}
 			
 		}
-		fprintf_s(stdout, "¡");
+		fprintf_s(stdout, "â– ");
 		fprintf_s(stdout, "\n");
 	}
 
-	// ‰º‚Ì•Ç‚Ì•`‰æ
+	// ä¸‹ã®å£ã®æç”»
 	for (int w = 0; w < SCREEN_WIDTH + 2; w++) {
 		if (w != SCREEN_WIDTH + 1) {
-			fprintf_s(stdout, "¡");
+			fprintf_s(stdout, "â– ");
 		}
 		else {
-			fprintf_s(stdout, "¡\n");
+			fprintf_s(stdout, "â– \n");
 		}
 	}
 }
@@ -128,7 +169,7 @@ void movePaddle() {
 			paddleX += PADDLE_VEROCITY;
 			break;
 		}
-		// ƒpƒhƒ‹‚ÌˆÚ“®”ÍˆÍİ’è
+		// ãƒ‘ãƒ‰ãƒ«ã®ç§»å‹•ç¯„å›²è¨­å®š
 		if (paddleX < 0) {
 			paddleX = 0;
 		}
@@ -140,7 +181,7 @@ void movePaddle() {
 }
 
 void controlGame() {
-	// ‘O‰ñ‚Ì•`‰æŠÔ
+	// å‰å›ã®æç”»æ™‚é–“
 	clock_t lastDrawTime = clock();
 
 		while (1) {
@@ -165,12 +206,12 @@ void controlGame() {
 				if (ballY >= SCREEN_HEIGHT - 1) {
 					ballVeroY = -1;
 				}
-				// ƒpƒhƒ‹‚Æƒ{[ƒ‹‚ÌÕ“Ë”»’è
+				// ãƒ‘ãƒ‰ãƒ«ã¨ãƒœãƒ¼ãƒ«ã®è¡çªåˆ¤å®š
 				if (ballY == paddleY - 1
 					&& ballX >= paddleX - 1
 					&& ballX < paddleX + PADDLE_WIDTH + 1) {
 
-					// ƒpƒhƒ‹‚Ì‰E”¼•”‚ÉÕ“Ë
+					// ãƒ‘ãƒ‰ãƒ«ã®å³åŠéƒ¨ã«è¡çª
 					if (ballX < paddleX + PADDLE_WIDTH / 2) {
 						ballVeroX = -1;
 					}
@@ -181,7 +222,7 @@ void controlGame() {
 					ballVeroY = -1;
 				}
 
-				// ƒ{[ƒ‹‚ÆƒuƒƒbƒN‚Ì‚ ‚½‚è”»’è
+				// ãƒœãƒ¼ãƒ«ã¨ãƒ–ãƒ­ãƒƒã‚¯ã®ã‚ãŸã‚Šåˆ¤å®š
 				for (int x = ballX - 1; x <= ballX + 1; x++) {
 					int y = ballY - 1;
 
@@ -199,7 +240,7 @@ void controlGame() {
 				lastDrawTime = currentTime;
 
 				if (ballY >= SCREEN_HEIGHT - 1) {
-					// GameOver”»’è
+					// GameOveråˆ¤å®š
 					isGameOver = true;
 				}
 			}
