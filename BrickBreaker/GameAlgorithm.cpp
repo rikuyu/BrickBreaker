@@ -13,7 +13,10 @@ int ballVeroY;
 int paddleX;
 int paddleY;
 
+bool isGameClear = false;
 bool isGameOver = false;
+
+double clearTime;
 
 // ゲームフィールドの座標を定義
 int field[SCREEN_HEIGHT][SCREEN_WIDTH];
@@ -64,10 +67,36 @@ void initBall() {
 void drawScreen() {
 	system("cls");
 
+	if (isGameClear) {
+		char str[BUFFSIZE];
+		char t[BUFFSIZE];
+
+
+		snprintf(str, BUFFSIZE, "%f", clearTime);
+		strncpy_s(t, str, 4);
+		
+		for (int h = 0; h < 2; h++) {
+			for (int w = 0; w < SCREEN_WIDTH + 2; w++) {
+				if (h ==0 && w == 0) {
+					fprintf_s(stdout, "\x1b[33mGAME CLEAR\033[m Time：%s(s)", t);
+				}
+				else if (w == SCREEN_WIDTH + 1) {
+					fprintf_s(stdout, "　\n");
+				}
+				else {
+					fprintf_s(stdout, "　");
+				}
+			}
+		}
+		
+		ballVeroX = 0;
+		ballVeroY = 0;
+	}
+
 	if (!isGameOver) {
 		// タイトルの表示
 		for (int w = 0; w < SCREEN_WIDTH + 2; w++) {
-			if (w == SCREEN_WIDTH / 6) {
+			if (w == 0) {
 				fprintf_s(stdout, "ブロック崩し 左移動：zキー 右移動： cキー");
 			}
 			else if (w == SCREEN_WIDTH + 1) {
@@ -77,18 +106,19 @@ void drawScreen() {
 				fprintf_s(stdout, "　");
 			}
 		}
-	}
-	else {
+	}else {
 		// Gameoverの文字を表示
-		for (int w = 0; w < SCREEN_WIDTH + 2; w++) {
-			if (w == SCREEN_WIDTH / 2 - 2) {
-				fprintf_s(stdout, "\x1b[31mGAME OVER\033[m");
-			}
-			else if (w == SCREEN_WIDTH + 1) {
-				fprintf_s(stdout, "　\n");
-			}
-			else {
-				fprintf_s(stdout, "　");
+		for (int h = 0; h < 2; h++) {
+			for (int w = 0; w < SCREEN_WIDTH + 2; w++) {
+				if (h == 0 && w == SCREEN_WIDTH / 2 - 2) {
+					fprintf_s(stdout, "\x1b[31mGAME OVER\033[m");
+				}
+				else if (w == SCREEN_WIDTH + 1) {
+					fprintf_s(stdout, "　\n");
+				}
+				else {
+					fprintf_s(stdout, "　");
+				}
 			}
 		}
 	}
@@ -114,7 +144,7 @@ void drawScreen() {
 				else if (h == paddleY && w >= paddleX && w < (paddleX + PADDLE_WIDTH)) {
 					fprintf_s(stdout, "◆");
 				}
-				else if (w != 0 && w != SCREEN_WIDTH - 1 && h != 0 && field[h][w] == 1) {
+				else if (h != 0 && h != 2 && h != 4 && field[h][w]) {
 					fprintf_s(stdout, "\x1b[33m★\033[m");
 				}
 				else {
@@ -152,7 +182,9 @@ void resetGame() {
 
 	for (int i = 0; i < SCREEN_HEIGHT / 4; i++) {
 		for (int j = 0; j < SCREEN_WIDTH; j++) {
-			field[i][j] = 1;
+			if (i % 2 == 1) {
+				field[i][j] = 1;
+			}
 		}
 	}
 
@@ -180,9 +212,14 @@ void movePaddle() {
 	}
 }
 
+double calcClaerTime(clock_t startTime, clock_t endTime) {
+	return (double)(endTime - startTime) / 1000;
+}
+
 void controlGame() {
 	// 前回の描画時間
 	clock_t lastDrawTime = clock();
+	clock_t startTime = clock();
 
 		while (1) {
 			clock_t currentTime = clock();
@@ -226,7 +263,7 @@ void controlGame() {
 				for (int x = ballX - 1; x <= ballX + 1; x++) {
 					int y = ballY - 1;
 
-					if (x < 1 || x >= SCREEN_WIDTH - 1 || y < 0) {
+					if (x < 0 || x >= SCREEN_WIDTH || y < 0) {
 						continue;
 					}
 					if (field[y][x] == 1) {
@@ -242,6 +279,12 @@ void controlGame() {
 				if (ballY >= SCREEN_HEIGHT - 1) {
 					// GameOver判定
 					isGameOver = true;
+				}
+				if (ballY == 1) {
+					// GameClear判定
+					isGameClear = true;
+					clock_t endTime = clock();
+					clearTime = calcClaerTime(startTime, endTime);
 				}
 			}
 			movePaddle();

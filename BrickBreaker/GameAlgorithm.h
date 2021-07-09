@@ -1,12 +1,12 @@
 #pragma once
 
-#define SCREEN_WIDTH 26
-#define SCREEN_HEIGHT 24
+#define SCREEN_WIDTH 14
+#define SCREEN_HEIGHT 28
 
 #define FPS 10
 #define INTERVAL 1000 / FPS
 
-#define PADDLE_WIDTH 6
+#define PADDLE_WIDTH 4
 
 #define PADDLE_VEROCITY 2
 
