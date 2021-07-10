@@ -6,9 +6,9 @@
 
 int main() {
 
-	resetGame();
+	initBall();
+
+	initGame();
 
 	controlGame();
-
-	_getch();
 }
